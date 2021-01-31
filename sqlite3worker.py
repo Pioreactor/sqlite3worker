@@ -100,8 +100,8 @@ class Sqlite3Worker(threading.Thread):
                 self._run_query(token, query, values)
                 execute_count += 1
                 # Let the executes build up a little before committing to disk
-                # to speed things up.
-                if self._sql_queue.empty() or execute_count == self._max_queue_size:
+                # to speed things up and reduce the number of writes to disk.
+                if (self._sql_queue.empty() or execute_count == self._max_queue_size) and (execute_count > 10):
                     try:
                         LOGGER.debug("run: commit")
                         self._sqlite3_conn.commit()
